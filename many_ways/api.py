@@ -39,19 +39,22 @@ class Journey(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('start', type=str, help='origin cannot be converted')
         parser.add_argument('end', type=str, help='destination cannot be converted')
+        parser.add_argument('mode', type=str, default='walking')
+
         args = parser.parse_args()
 
         origin = args.get('start') or 'start not set'
         destination = args.get('end') or 'end not set'
+        mode = args.get('mode')
 
         origin = string.split(origin,',')
         destination = string.split(destination,',')
 
-        # directions_result = self.google_directions(start=origin,end=destination)
-        directions_result = {}
+        directions_result = self.google_directions(start=origin,end=destination, mode=mode)
+        # directions_result = {}
         return {
-            'start': start,
-            'end': end,
+            'start': origin,
+            'end': destination,
             'directions': directions_result,
             'origin': origin[0] + "," + origin[1],
             'destination': destination
