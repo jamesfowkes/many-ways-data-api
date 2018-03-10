@@ -1,8 +1,12 @@
 import os
+import string
 import config
 from flask import Flask
 from flask_restful import Resource, Api
-from journey import Journey
+import googlemaps
+from datetime import datetime
+from flask_restful import reqparse
+
 
 app = Flask(__name__)
 api = Api(app)
@@ -19,11 +23,39 @@ class HelloWorld(Resource):
 
 
 class Journey(Resource):
-    def get(self, start="nottingham", end="amerillo"):
+    def google_directions(self, start=None, end=None, mode="walking"):
+        gmaps = googlemaps.Client(key=app.config['MAPS_API_KEY'])
+
+        # Request directions via public transit
+        now = datetime.now()
+        directions_result = gmaps.directions(start,
+                                             end,
+                                             mode=mode,
+                                             departure_time=now)
+
+        return directions_result
+
+    def get(self, start=(52.935405,-2.2419356), end=(52.935405,-1.2419356)):
+        parser = reqparse.RequestParser()
+        parser.add_argument('start', type=str, help='origin cannot be converted')
+        parser.add_argument('end', type=str, help='destination cannot be converted')
+        args = parser.parse_args()
+
+        origin = args.get('start') or 'start not set'
+        destination = args.get('end') or 'end not set'
+
+        origin = string.split(origin,',')
+        destination = string.split(destination,',')
+
+        # directions_result = self.google_directions(start=origin,end=destination)
+        directions_result = {}
         return {
             'start': start,
             'end': end,
-            'api_key': app.config['MAPS_API_KEY']
+            'directions': directions_result,
+            'origin': origin[0] + "," + origin[1],
+            'destination': destination
+            # 'destination': destination[0] + "," + destination[1]
         }
 
 api.add_resource(HelloWorld, '/')
