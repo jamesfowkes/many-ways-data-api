@@ -48,8 +48,12 @@ class Journey(Resource):
         destination = args.get('end') or 'end not set'
         mode = args.get('mode')
 
-        origin = string.split(origin,',')
-        destination = string.split(destination,',')
+        try:
+            origin = string.split(origin,',')
+            destination = string.split(destination,',')
+        except AttributeError:
+            origin = str.split(origin,',')
+            destination = str.split(destination,',')
 
         modes_of_travel = ['walking', 'driving', 'transit']
 
