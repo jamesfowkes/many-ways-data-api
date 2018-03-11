@@ -69,6 +69,7 @@ class Journey(Resource):
 
             route = {
                 'type': mode,
+                "bounds": directions_result[0]['bounds'],
                 'distance': directions_result[0]['legs'][0]['distance']['text'], #.keys()[6] ,#['directions']['legs'].keys(),
                 'score': score,
                 'polylines': polylines,
