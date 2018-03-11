@@ -38,6 +38,14 @@ def distance_from_distance_str(s):
     d = s.strip(' km')
     return float(d)
 
+def process_steps(steps):
+    for step in steps:
+        step_distance = step['distance']['value']
+        if 'transit_details' in step:
+            return (step['transit_details']['line']['vehicle']['type'], step_distance)
+        else:
+            return (step['travel_mode'], step_distance)
+
 class Journey(Resource):
     def google_directions(self, start=None, end=None, mode="walking"):
         gmaps = googlemaps.Client(key=app.config['MAPS_API_KEY'])
@@ -84,13 +92,7 @@ class Journey(Resource):
 
             for legs in directions_result[0]['legs']:
                 distance = distance + distance_from_distance_str(legs['distance']['text'])
-
-                for step in legs['steps']:
-                    step_distance = step['distance']['value']
-                    if 'transit_details' in step:
-                        modes.append((step['transit_details']['line']['vehicle']['type'], step_distance))
-                    else:
-                        modes.append((step['travel_mode'], step_distance))
+                modes.append(process_steps(legs['steps']))
 
         modes.sort(key=lambda tup: tup[1])
 
