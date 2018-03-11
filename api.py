@@ -8,13 +8,22 @@ from flask_restful import reqparse
 import json
 import requests
 from collections import Counter
+import logging
+
+import requests_cache
+requests_cache.install_cache('maps_cache')
+
+import enviro
+from latlng import LatLng
+
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 api = Api(app)
 
 app.config.update(
     MAPS_API_KEY = os.environ.get("MAPS_API_KEY"),
-    DEBUG = True,
+    DEBUG = False,
     LOCAL = True,
 )
 
@@ -39,26 +48,28 @@ def distance_from_distance_str(s):
     return float(d)
 
 def process_steps(steps):
+    step_data = []
     for step in steps:
         step_distance = step['distance']['value']
         if 'transit_details' in step:
-            return (step['transit_details']['line']['vehicle']['type'], step_distance)
+            #step_data.append((step['transit_details']['line']['vehicle']['type'], step_distance))
+            return [(step['transit_details']['line']['vehicle']['type'], step_distance)]
         else:
-            return (step['travel_mode'], step_distance)
+            #step_data.append((step['travel_mode'], step_distance))            
+            return [(step['travel_mode'], step_distance)]
+
+    return step_data
 
 def get_score(origin, destination, distance, mode):
 
-    def gen_lat_long_string(lat_long):
-        lat_long_string = str(lat_long[0]) + ',' + str(lat_long[1])
-        return lat_long_string
+    population_modifier = enviro.get_route_population_density_modifier(LatLng(*origin), LatLng(*destination))
+    (co2_score, nox_score) = enviro.get_scores(enviro.get_mode(mode), distance, pop=population_modifier)
 
-    request_url = 'http://localhost:8000/score?start={}&end={}&distance={}&mode={}'.format(gen_lat_long_string(origin),
-                                                                                                   gen_lat_long_string(destination),
-                                                                                                   distance,
-                                                                                                   mode)
-
-    r = requests.get(request_url)
-    return r.json(), r.json()['total_score']
+    return {
+        "co2_score": co2_score,
+        "nox_score": nox_score,
+        "total_score": co2_score+nox_score
+    }
 
 class Journey(Resource):
     def google_directions(self, start=None, end=None, mode="walking"):
@@ -83,24 +94,27 @@ class Journey(Resource):
 
         for legs in directions_result[0]['legs']:
             distance = distance + distance_from_distance_str(legs['distance']['text'])
-            modes.append(process_steps(legs['steps']))
+            step_data = process_steps(legs['steps'])
+            for mode, distance in step_data:
+                score_data = get_score(origin, destination, distance, mode)
+                modes.append((mode, distance, score_data, score_data["total_score"]))
+
+        cumulative_total_score = sum([mode[3] for mode in modes])
 
         modes.sort(key=lambda tup: tup[1])
 
-        mode = modes[len(modes) - 1][0]
-
-        score, total_score = get_score(origin, destination, distance, mode)
+        mode = modes.reverse()
 
         polylines = []
         for step in directions_result[0]['legs'][0]['steps']:
             polylines.append(step['polyline']['points'])
 
         route = {
-            'type': mode,
+            'type': [mode[0] for mode in modes],
             "bounds": directions_result[0]['bounds'],
             'distance': distance,
-            'score': score,
-            'total_score': total_score,
+            'scores': [mode[2] for mode in modes],
+            'total_score': cumulative_total_score,
             'polylines': polylines,
             'end_location': directions_result[0]['legs'][0]['steps'][0]['end_location'],
             'start_location': directions_result[0]['legs'][0]['steps'][0]['start_location'],
@@ -119,6 +133,9 @@ class Journey(Resource):
         }
 
     def get(self, start=(52.935405,-2.2419356), end=(52.935405,-1.2419356)):
+
+        logging.info("get: %s, %s", start, end)
+
         parser = reqparse.RequestParser()
         parser.add_argument('start', type=str, help='origin cannot be converted')
         parser.add_argument('end', type=str, help='destination cannot be converted')
@@ -159,6 +176,5 @@ api.add_resource(Journey,
                  '/manyways/<string:start>/<string:end>',
                  '/manyways/')
 
-
-if __name__ == '__main__':
+if __name__ == '__main__':    
     app.run(debug=True)

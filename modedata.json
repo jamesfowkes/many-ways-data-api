@@ -1,0 +1,82 @@
+{
+	"small petrol car": {
+		"co2":156,
+		"nox":2.1
+	},
+	"medium petrol car": {
+		"co2":195,
+		"nox":2.1
+	},
+	"large petrol car": {
+		"co2":285,
+		"nox":2.1
+	},
+	"small diesel car": {
+		"co2":145,
+		"nox":2.99
+	},
+	"medium diesel car": {
+		"co2":174,
+		"nox":2.99
+	},
+	"large diesel car": {
+		"co2":218,
+		"nox":2.99
+	},
+	"average hybrid car": {
+		"co2":118,
+		"nox":1.271
+	},
+	"average phev car": {
+		"co2":56,
+		"nox":0.602
+	},
+	"average ev (electric) car": {
+		"co2":73,
+		"nox":0.795
+	},
+	"average lpg car": {
+		"co2":201,
+		"nox":2.167
+	},
+	"average taxi": {
+		"co2":213,
+		"nox":3.347
+	},
+	"average moped": {
+		"co2":85,
+		"nox":0.912
+	},
+	"average larger motorbike": {
+		"co2":135,
+		"nox":1.456
+	},
+	"bike": {
+		"co2":0.001,
+		"nox":0.001
+	},
+	"foot": {
+		"co2":0.001,
+		"nox":0.001
+	},
+	"tram": {
+		"co2":24,
+		"nox":0.2
+	},
+	"diesel train": {
+		"co2":37,
+		"nox":1.0
+	},
+	"electric train": {
+		"co2":24,
+		"nox":0.4
+	},
+	"bus": {
+		"co2":64,
+		"nox":0.8
+	},
+	"electric bus": {
+		"co2":24,
+		"nox":0.095
+	}
+}
