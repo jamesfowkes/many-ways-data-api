@@ -1,12 +1,12 @@
 import os
 import string
-import many_ways.config
 from flask import Flask
 from flask_restful import Resource, Api
 import googlemaps
 from datetime import datetime
 from flask_restful import reqparse
 import json
+import requests
 
 app = Flask(__name__)
 api = Api(app)
@@ -59,7 +59,17 @@ class Journey(Resource):
 
             directions_result = self.google_directions(start=origin,end=destination, mode=mode)
 
-            score = 23 # Send distance and start end location
+            distance = directions_result[0]['legs'][0]['distance']['text']
+
+            request_url = 'http://localhost:8000/score?start={}&end={}&distance=5&mode={}'.format(start,
+                                                                                                  end,
+                                                                                                  distance,
+                                                                                                  mode)
+
+            r = requests.get('http://localhost:8000/score?start=52.953546,-1.144435&end=52.921495,-1.206233&distance=5&mode=car')
+            score = r.json()
+            total_score = r.json()['total_score']
+
             segments = []
 
             polylines = []
@@ -70,8 +80,9 @@ class Journey(Resource):
             route = {
                 'type': mode,
                 "bounds": directions_result[0]['bounds'],
-                'distance': directions_result[0]['legs'][0]['distance']['text'], #.keys()[6] ,#['directions']['legs'].keys(),
+                'distance': distance,
                 'score': score,
+                'total_score': total_score,
                 'polylines': polylines,
                 'end_location': directions_result[0]['legs'][0]['steps'][0]['end_location'],
                 'start_location': directions_result[0]['legs'][0]['steps'][0]['start_location'],
@@ -81,13 +92,7 @@ class Journey(Resource):
 
         return {
              'routes': routes,
-            # 'start': origin,
-            # 'end': destination,
-            #  'directions': directions_result,
-            # 'origin': origin[0] + "," + origin[1],
-            # 'destination': destination
-            # 'destination': destination[0] + "," + destination[1],
-        }
+       }
 
 api.add_resource(HelloWorld, '/')
 api.add_resource(Journey,
