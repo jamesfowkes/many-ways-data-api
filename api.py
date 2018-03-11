@@ -34,6 +34,10 @@ class HelloWorld(Resource):
     def get(self):
         return {'hello': 'world'}
 
+def distance_from_distance_str(s):
+    d = s.strip(' km')
+    return float(d)
+
 class Journey(Resource):
     def google_directions(self, start=None, end=None, mode="walking"):
         gmaps = googlemaps.Client(key=app.config['MAPS_API_KEY'])
@@ -79,10 +83,7 @@ class Journey(Resource):
             modes = []
 
             for legs in directions_result[0]['legs']:
-                tmp_distance = legs['distance']['text']
-                tmp_distance = tmp_distance.strip(' km')
-                tmp_distance = float(tmp_distance)
-                distance = distance + tmp_distance
+                distance = distance + distance_from_distance_str(legs['distance']['text'])
 
                 for step in legs['steps']:
                     step_distance = step['distance']['value']
