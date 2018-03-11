@@ -49,7 +49,7 @@ def process_steps(steps):
 def get_score(origin, destination, distance, mode):
 
     def gen_lat_long_string(lat_long):
-        lat_long_string = lat_long[0] + ',' + lat_long[1]
+        lat_long_string = str(lat_long[0]) + ',' + str(lat_long[1])
         return lat_long_string
 
     request_url = 'http://localhost:8000/score?start={}&end={}&distance={}&mode={}'.format(gen_lat_long_string(origin),
@@ -108,6 +108,16 @@ class Journey(Resource):
 
         return route
 
+    def get_pandr_route(self, origin, pandr_latlng, destination):
+        to_pandr_route = self.get_route_for_mode(origin, pandr_latlng, "driving")
+        from_pandr_route = self.get_route_for_mode(pandr_latlng, destination, "transit")
+        
+        return {
+            "to_pandr" : to_pandr_route,
+            "from_pandr" : from_pandr_route,
+            "total_score" : to_pandr_route["total_score"] + from_pandr_route["total_score"]
+        }
+
     def get(self, start=(52.935405,-2.2419356), end=(52.935405,-1.2419356)):
         parser = reqparse.RequestParser()
         parser.add_argument('start', type=str, help='origin cannot be converted')
@@ -129,14 +139,18 @@ class Journey(Resource):
 
         modes_of_travel = ['walking', 'driving', 'transit']
 
-        routes  = []
-
+        direct_routes = []
         for mode in modes_of_travel:
-            routes.append(self.get_route_for_mode(origin, destination, mode))
+            direct_routes.append(self.get_route_for_mode(origin, destination, mode))
+
+        pandr_routes = {}
+        for pandr_name, pandr_latlng in park_and_rides.items():
+            pandr_routes[pandr_name] = self.get_pandr_route(origin, pandr_latlng, destination)
 
         return {
             'time': str(datetime.now()),
-            'routes': routes,
+            'direct_routes': direct_routes,
+            'pandr_routes': pandr_routes
        }
 
 api.add_resource(HelloWorld, '/')
