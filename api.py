@@ -46,6 +46,20 @@ def process_steps(steps):
         else:
             return (step['travel_mode'], step_distance)
 
+def get_score(origin, destination, distance, mode):
+
+    def gen_lat_long_string(lat_long):
+        lat_long_string = lat_long[0] + ',' + lat_long[1]
+        return lat_long_string
+
+    request_url = 'http://localhost:8000/score?start={}&end={}&distance={}&mode={}'.format(gen_lat_long_string(origin),
+                                                                                                   gen_lat_long_string(destination),
+                                                                                                   distance,
+                                                                                                   mode)
+
+    r = requests.get(request_url)
+    return r.json(), r.json()['total_score']
+
 class Journey(Resource):
     def google_directions(self, start=None, end=None, mode="walking"):
         gmaps = googlemaps.Client(key=app.config['MAPS_API_KEY'])
@@ -98,24 +112,11 @@ class Journey(Resource):
 
             mode = modes[len(modes) - 1][0]
 
-            def gen_lat_long_string(lat_long):
-                lat_long_string = lat_long[0] + ',' + lat_long[1]
-
-                return lat_long_string
-
-            request_url = 'http://localhost:8000/score?start={}&end={}&distance={}&mode={}'.format(gen_lat_long_string(origin),
-                                                                                                   gen_lat_long_string(destination),
-                                                                                                   distance,
-                                                                                                   mode)
-
-            r = requests.get(request_url)
-            score = r.json()
-            total_score = r.json()['total_score']
+            score, total_score = get_score(origin, destination, distance, mode)
 
             polylines = []
             for step in directions_result[0]['legs'][0]['steps']:
                 polylines.append(step['polyline']['points'])
-
 
             route = {
                 'type': mode,
