@@ -7,6 +7,7 @@ from datetime import datetime
 from flask_restful import reqparse
 import json
 import requests
+from collections import Counter
 
 app = Flask(__name__)
 api = Api(app)
@@ -52,43 +53,72 @@ class Journey(Resource):
 
         modes_of_travel = ['walking', 'driving', 'transit']
 
-
         routes  = []
 
         for mode in modes_of_travel:
-
             directions_result = self.google_directions(start=origin,end=destination, mode=mode)
 
-            distance = directions_result[0]['legs'][0]['distance']['text']
+            distance = 0
 
-            request_url = 'http://localhost:8000/score?start={}&end={}&distance=5&mode={}'.format(start,
-                                                                                                  end,
-                                                                                                  distance,
-                                                                                                  mode)
+            leg_keys = []
+            modes = []
 
-            r = requests.get('http://localhost:8000/score?start=52.953546,-1.144435&end=52.921495,-1.206233&distance=5&mode=car')
-            score = r.json()
-            total_score = r.json()['total_score']
+            for legs in directions_result[0]['legs']:
+                tmp_distance = legs['distance']['text']
+                tmp_distance = tmp_distance.strip(' km')
+                tmp_distance = float(tmp_distance)
+                distance = distance + tmp_distance
 
-            segments = []
+                for step in legs['steps']:
+                    step_distance = step['distance']['value']
+                    if 'transit_details' in step:
+                        modes.append((step['transit_details']['line']['vehicle']['type'], step_distance))
+                    else:
+                        modes.append((step['travel_mode'], step_distance))
 
-            polylines = []
-            for step in directions_result[0]['legs'][0]['steps']:
-                polylines.append(step['polyline']['points'])
+        modes.sort(key=lambda tup: tup[1])
+
+        mode = modes[len(modes) - 1][0]
+
+        def gen_lat_long_string(lat_long):
+            lat_long_string = lat_long[0] + ',' + lat_long[1]
+
+            return lat_long_string
+
+        request_url = 'http://localhost:8000/score?start={}&end={}&distance={}&mode={}'.format(gen_lat_long_string(origin),
+                                                                                                gen_lat_long_string(destination),
+                                                                                                distance,
+                                                                                                mode)
+
+            # working_string = 'http://localhost:8000/score?start=52.953546,-1.144435&end=52.921495,-1.206233&distance=0.9&mode=walking'
+
+            # return (request_url + "/////////" + working_string)
+            # return working_string == request_url
+
+            # r = requests.get('http://localhost:8000/score?start=52.953546,-1.144435&end=52.921495,-1.206233&distance=5&mode=car')
+        r = requests.get(request_url)
+        score = r.json()
+        total_score = r.json()['total_score']
+
+        segments = []
+
+        polylines = []
+        for step in directions_result[0]['legs'][0]['steps']:
+            polylines.append(step['polyline']['points'])
 
 
-            route = {
-                'type': mode,
-                "bounds": directions_result[0]['bounds'],
-                'distance': distance,
-                'score': score,
-                'total_score': total_score,
-                'polylines': polylines,
-                'end_location': directions_result[0]['legs'][0]['steps'][0]['end_location'],
-                'start_location': directions_result[0]['legs'][0]['steps'][0]['start_location'],
-            }
+        route = {
+            'type': mode,
+            "bounds": directions_result[0]['bounds'],
+            'distance': distance,
+            'score': score,
+            'total_score': total_score,
+            'polylines': polylines,
+            'end_location': directions_result[0]['legs'][0]['steps'][0]['end_location'],
+            'start_location': directions_result[0]['legs'][0]['steps'][0]['start_location'],
+        }
 
-            routes.append(route)
+        routes.append(route)
 
         return {
              'routes': routes,
