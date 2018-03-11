@@ -18,10 +18,21 @@ app.config.update(
     LOCAL = True,
 )
 
+park_and_rides = {
+   "Wilkinson Street Park & Ride": (52.972727652720891,-1.178095145038694),
+   "Racecourse Park & Ride": (52.949202938055173,-1.114290514897690),
+   "Phoenix Park & Ride": (52.989046559946239,-1.208008404285609),
+   "Moor Bridge Park & Ride": (53.014345727625326,-1.187462109287195),
+   "Forest Park & Ride": (52.965181584766448,-1.164717506856619),
+   "Queens Drive Park & Ride": (52.928718217981476,-1.164183075524257),
+   "Clifton Park & Ride": (52.896244, -1.194184),
+   "Toton Lane Park & Ride": (52.918419, -1.262344),
+   "Hucknall Park & Ride": (53.038133, -1.195858)
+}
+
 class HelloWorld(Resource):
     def get(self):
         return {'hello': 'world'}
-
 
 class Journey(Resource):
     def google_directions(self, start=None, end=None, mode="walking"):
