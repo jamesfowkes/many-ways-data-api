@@ -113,7 +113,8 @@ class Journey(Resource):
             routes.append(route)
 
         return {
-             'routes': routes,
+            'time': str(datetime.now()),
+            'routes': routes,
        }
 
 api.add_resource(HelloWorld, '/')
