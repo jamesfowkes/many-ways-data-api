@@ -1,0 +1,100 @@
+{
+    "directions": [
+        {
+            "bounds": {
+                "northeast": {
+                    "lat": 52.9475031, 
+                    "lng": -1.1610165
+                }, 
+                "southwest": {
+                    "lat": 52.9467434, 
+                    "lng": -1.17201
+                }
+            }, 
+            "copyrights": "Map data \u00a92018 Google", 
+            "legs": [
+                {
+                    "distance": {
+                        "text": "1.1 km", 
+                        "value": 1072
+                    }, 
+                    "duration": {
+                        "text": "3 mins", 
+                        "value": 164
+                    }, 
+                    "duration_in_traffic": {
+                        "text": "2 mins", 
+                        "value": 135
+                    }, 
+                    "end_address": "56 Park Rd, Nottingham NG7 1JG, UK", 
+                    "end_location": {
+                        "lat": 52.9475031, 
+                        "lng": -1.1676001
+                    }, 
+                    "start_address": "169 Castle Blvd, Nottingham NG7, UK", 
+                    "start_location": {
+                        "lat": 52.9473995, 
+                        "lng": -1.1610165
+                    }, 
+                    "steps": [
+                        {
+                            "distance": {
+                                "text": "0.7 km", 
+                                "value": 709
+                            }, 
+                            "duration": {
+                                "text": "2 mins", 
+                                "value": 92
+                            }, 
+                            "end_location": {
+                                "lat": 52.9468633, 
+                                "lng": -1.1715061
+                            }, 
+                            "html_instructions": "Head <b>west</b> on <b>Castle Blvd</b>/<b>A6005</b>", 
+                            "polyline": {
+                                "points": "ghdbIjwaF@TRfHZfJJfBFnAD|@NlCVbEDh@@T@^D~B?p@?fAAl@AfAEbB?rAAr@KfC"
+                            }, 
+                            "start_location": {
+                                "lat": 52.9473995, 
+                                "lng": -1.1610165
+                            }, 
+                            "travel_mode": "DRIVING"
+                        }, 
+                        {
+                            "distance": {
+                                "text": "0.4 km", 
+                                "value": 363
+                            }, 
+                            "duration": {
+                                "text": "1 min", 
+                                "value": 72
+                            }, 
+                            "end_location": {
+                                "lat": 52.9475031, 
+                                "lng": -1.1676001
+                            }, 
+                            "html_instructions": "At the roundabout, take the <b>3rd</b> exit onto <b>Park Rd</b>", 
+                            "maneuver": "roundabout-left", 
+                            "polyline": {
+                                "points": "{ddbI|xcFDDDJ@F@H?PALCLADCBCBC@I@G?GEGGAEAEAE?GAM@I@KBIQg@Oq@EUCKEk@GyB?OCkBGuDQmDAY"
+                            }, 
+                            "start_location": {
+                                "lat": 52.9468633, 
+                                "lng": -1.1715061
+                            }, 
+                            "travel_mode": "DRIVING"
+                        }
+                    ], 
+                    "traffic_speed_entry": [], 
+                    "via_waypoint": []
+                }
+            ], 
+            "overview_polyline": {
+                "points": "ghdbIjwaFT|Hf@nMt@~MF~@F~CCnFEvDMzDJPBPA^ERGFMBOEIMEa@BUBIQg@UgAIw@SkLSgE"
+            }, 
+            "summary": "Castle Blvd/A6005 and Park Rd", 
+            "warnings": [], 
+            "waypoint_order": []
+        }
+    ]
+}

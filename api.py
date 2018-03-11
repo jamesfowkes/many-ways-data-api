@@ -1,12 +1,12 @@
 import os
 import string
-import config
+import many_ways.config
 from flask import Flask
 from flask_restful import Resource, Api
 import googlemaps
 from datetime import datetime
 from flask_restful import reqparse
-
+import json
 
 app = Flask(__name__)
 api = Api(app)
@@ -14,7 +14,7 @@ api = Api(app)
 app.config.update(
     MAPS_API_KEY = os.environ.get("MAPS_API_KEY"),
     DEBUG = True,
-    LOCAL = True
+    LOCAL = True,
 )
 
 class HelloWorld(Resource):
@@ -50,14 +50,16 @@ class Journey(Resource):
         origin = string.split(origin,',')
         destination = string.split(destination,',')
 
-        modes_of_travel = ['walking', 'driving', 'bicycling', 'transit']
+        modes_of_travel = ['walking', 'driving', 'transit']
 
 
         routes  = []
 
         for mode in modes_of_travel:
+
             directions_result = self.google_directions(start=origin,end=destination, mode=mode)
-            score = 23
+
+            score = 23 # Send distance and start end location
             segments = []
 
             polylines = []
