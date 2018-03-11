@@ -76,49 +76,41 @@ class Journey(Resource):
                     else:
                         modes.append((step['travel_mode'], step_distance))
 
-        modes.sort(key=lambda tup: tup[1])
+            modes.sort(key=lambda tup: tup[1])
 
-        mode = modes[len(modes) - 1][0]
+            mode = modes[len(modes) - 1][0]
 
-        def gen_lat_long_string(lat_long):
-            lat_long_string = lat_long[0] + ',' + lat_long[1]
+            def gen_lat_long_string(lat_long):
+                lat_long_string = lat_long[0] + ',' + lat_long[1]
 
-            return lat_long_string
+                return lat_long_string
 
-        request_url = 'http://localhost:8000/score?start={}&end={}&distance={}&mode={}'.format(gen_lat_long_string(origin),
-                                                                                                gen_lat_long_string(destination),
-                                                                                                distance,
-                                                                                                mode)
+            request_url = 'http://localhost:8000/score?start={}&end={}&distance={}&mode={}'.format(gen_lat_long_string(origin),
+                                                                                                   gen_lat_long_string(destination),
+                                                                                                   distance,
+                                                                                                   mode)
 
-            # working_string = 'http://localhost:8000/score?start=52.953546,-1.144435&end=52.921495,-1.206233&distance=0.9&mode=walking'
+            r = requests.get(request_url)
+            score = r.json()
+            total_score = r.json()['total_score']
 
-            # return (request_url + "/////////" + working_string)
-            # return working_string == request_url
-
-            # r = requests.get('http://localhost:8000/score?start=52.953546,-1.144435&end=52.921495,-1.206233&distance=5&mode=car')
-        r = requests.get(request_url)
-        score = r.json()
-        total_score = r.json()['total_score']
-
-        segments = []
-
-        polylines = []
-        for step in directions_result[0]['legs'][0]['steps']:
-            polylines.append(step['polyline']['points'])
+            polylines = []
+            for step in directions_result[0]['legs'][0]['steps']:
+                polylines.append(step['polyline']['points'])
 
 
-        route = {
-            'type': mode,
-            "bounds": directions_result[0]['bounds'],
-            'distance': distance,
-            'score': score,
-            'total_score': total_score,
-            'polylines': polylines,
-            'end_location': directions_result[0]['legs'][0]['steps'][0]['end_location'],
-            'start_location': directions_result[0]['legs'][0]['steps'][0]['start_location'],
-        }
+            route = {
+                'type': mode,
+                "bounds": directions_result[0]['bounds'],
+                'distance': distance,
+                'score': score,
+                'total_score': total_score,
+                'polylines': polylines,
+                'end_location': directions_result[0]['legs'][0]['steps'][0]['end_location'],
+                'start_location': directions_result[0]['legs'][0]['steps'][0]['start_location'],
+            }
 
-        routes.append(route)
+            routes.append(route)
 
         return {
              'routes': routes,
