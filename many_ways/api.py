@@ -50,15 +50,40 @@ class Journey(Resource):
         origin = string.split(origin,',')
         destination = string.split(destination,',')
 
-        directions_result = self.google_directions(start=origin,end=destination, mode=mode)
-        # directions_result = {}
+        modes_of_travel = ['walking', 'driving', 'bicycling', 'transit']
+
+
+        routes  = []
+
+        for mode in modes_of_travel:
+            directions_result = self.google_directions(start=origin,end=destination, mode=mode)
+            score = 23
+            segments = []
+
+            polylines = []
+            for step in directions_result[0]['legs'][0]['steps']:
+                polylines.append(step['polyline']['points'])
+
+
+            route = {
+                'type': mode,
+                'distance': directions_result[0]['legs'][0]['distance']['text'], #.keys()[6] ,#['directions']['legs'].keys(),
+                'score': score,
+                'polylines': polylines,
+                'end_location': directions_result[0]['legs'][0]['steps'][0]['end_location'],
+                'start_location': directions_result[0]['legs'][0]['steps'][0]['start_location'],
+            }
+
+            routes.append(route)
+
         return {
-            'start': origin,
-            'end': destination,
-            'directions': directions_result,
-            'origin': origin[0] + "," + origin[1],
-            'destination': destination
-            # 'destination': destination[0] + "," + destination[1]
+             'routes': routes,
+            # 'start': origin,
+            # 'end': destination,
+            #  'directions': directions_result,
+            # 'origin': origin[0] + "," + origin[1],
+            # 'destination': destination
+            # 'destination': destination[0] + "," + destination[1],
         }
 
 api.add_resource(HelloWorld, '/')
