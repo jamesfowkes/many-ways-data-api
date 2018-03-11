@@ -71,6 +71,19 @@ def get_score(origin, destination, distance, mode):
         "total_score": co2_score+nox_score
     }
 
+def get_closest_pandr(origin, park_and_rides):
+    closest_name = ""
+    closest_distance = 10000000
+    for pandr_name, pandr_latlng in park_and_rides.items():
+        distance = LatLng(*pandr_latlng).distance_from(LatLng(*origin))
+        if distance < closest_distance:
+            closest_name = pandr_name
+            closest_distance = distance
+
+    logging.info("closest: %s, %s", closest_name, closest_distance)
+
+    return park_and_rides[closest_name]
+
 class Journey(Resource):
     def google_directions(self, start=None, end=None, mode="walking"):
         gmaps = googlemaps.Client(key=app.config['MAPS_API_KEY'])
@@ -161,13 +174,14 @@ class Journey(Resource):
             direct_routes.append(self.get_route_for_mode(origin, destination, mode))
 
         pandr_routes = {}
-        for pandr_name, pandr_latlng in park_and_rides.items():
-            pandr_routes[pandr_name] = self.get_pandr_route(origin, pandr_latlng, destination)
+        closest_pandr = get_closest_pandr(origin, park_and_rides)
+
+        pandr_route = self.get_pandr_route(origin, closest_pandr, destination)
 
         return {
             'time': str(datetime.now()),
             'direct_routes': direct_routes,
-            'pandr_routes': pandr_routes
+            'pandr_route': pandr_route
        }
 
 api.add_resource(HelloWorld, '/')
