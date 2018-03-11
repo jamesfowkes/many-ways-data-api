@@ -73,6 +73,41 @@ class Journey(Resource):
 
         return directions_result
 
+    def get_route_for_mode(self, origin, destination, mode):
+        directions_result = self.google_directions(start=origin,end=destination, mode=mode)
+
+        distance = 0
+
+        leg_keys = []
+        modes = []
+
+        for legs in directions_result[0]['legs']:
+            distance = distance + distance_from_distance_str(legs['distance']['text'])
+            modes.append(process_steps(legs['steps']))
+
+        modes.sort(key=lambda tup: tup[1])
+
+        mode = modes[len(modes) - 1][0]
+
+        score, total_score = get_score(origin, destination, distance, mode)
+
+        polylines = []
+        for step in directions_result[0]['legs'][0]['steps']:
+            polylines.append(step['polyline']['points'])
+
+        route = {
+            'type': mode,
+            "bounds": directions_result[0]['bounds'],
+            'distance': distance,
+            'score': score,
+            'total_score': total_score,
+            'polylines': polylines,
+            'end_location': directions_result[0]['legs'][0]['steps'][0]['end_location'],
+            'start_location': directions_result[0]['legs'][0]['steps'][0]['start_location'],
+        }
+
+        return route
+
     def get(self, start=(52.935405,-2.2419356), end=(52.935405,-1.2419356)):
         parser = reqparse.RequestParser()
         parser.add_argument('start', type=str, help='origin cannot be converted')
@@ -97,39 +132,7 @@ class Journey(Resource):
         routes  = []
 
         for mode in modes_of_travel:
-            directions_result = self.google_directions(start=origin,end=destination, mode=mode)
-
-            distance = 0
-
-            leg_keys = []
-            modes = []
-
-            for legs in directions_result[0]['legs']:
-                distance = distance + distance_from_distance_str(legs['distance']['text'])
-                modes.append(process_steps(legs['steps']))
-
-            modes.sort(key=lambda tup: tup[1])
-
-            mode = modes[len(modes) - 1][0]
-
-            score, total_score = get_score(origin, destination, distance, mode)
-
-            polylines = []
-            for step in directions_result[0]['legs'][0]['steps']:
-                polylines.append(step['polyline']['points'])
-
-            route = {
-                'type': mode,
-                "bounds": directions_result[0]['bounds'],
-                'distance': distance,
-                'score': score,
-                'total_score': total_score,
-                'polylines': polylines,
-                'end_location': directions_result[0]['legs'][0]['steps'][0]['end_location'],
-                'start_location': directions_result[0]['legs'][0]['steps'][0]['start_location'],
-            }
-
-            routes.append(route)
+            routes.append(self.get_route_for_mode(origin, destination, mode))
 
         return {
             'time': str(datetime.now()),
